@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:13
+    container_name: fcc_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - my_dbdata:/var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin_fcc
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+volumes:
+  my_dbdata:
+  pgadmin-data:
