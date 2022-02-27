@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 # Pydantic model used to define schema of API requests and responses
@@ -9,3 +10,13 @@ class PostBase(BaseModel):  # Post pydantic class extends BaseModel
 
 class PostCreate(PostBase):
     pass
+
+# how we send data to user in response
+class PostResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
