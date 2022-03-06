@@ -1,14 +1,17 @@
+import pwd
+import re
 from typing import Optional, List
 from fastapi import FastAPI, Response, status, HTTPException, Depends
+from pydantic import BaseModel
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
-from . import models, schemas
+from . import models, schemas, utils
 from .database import engine, get_db
-
 
 models.Base.metadata.create_all(bind=engine) # automatically creates tables from models.py in postgres
 
@@ -120,3 +123,32 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
     
     return post_query.first()
+
+
+@app.post("/users/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+
+    try:
+        hashed_password = utils.hash_password(user.password)
+        user.password = hashed_password
+        new_user = models.User(**user.dict())
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+    except SQLAlchemyError as e:
+            error = str(e.__dict__['orig'])
+            print(type(e))
+            return error
+    
+    return new_user
+
+
+@app.get("/users/{id}", response_model=schemas.UserOut)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
+
+    return user

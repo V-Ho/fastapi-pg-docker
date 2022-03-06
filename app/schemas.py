@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 # Pydantic model used to define schema of API requests and responses
 class PostBase(BaseModel):  # Post pydantic class extends BaseModel
@@ -17,6 +17,19 @@ class PostResponse(BaseModel):
     title: str
     content: str
     created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    # created_at: datetime
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    # created_at: datetime
 
     class Config:
         orm_mode = True
